@@ -10,15 +10,16 @@ import (
 )
 
 type AramSzunet struct {
-	ID         string
-	Datum      string
-	Idoszak    string
-	Varos      string
-	VarosLink  string
-	Terulet    string
-	Megjegyzes string
-	Forras     string
-	Bekerules  string
+	ID          string
+	Datum       string
+	Idoszak     string
+	Varos       string
+	VarosLink   string
+	Terulet     string
+	Megjegyzes  string
+	Forras      string
+	Bekerules   string
+	Terulet_mod string
 }
 
 type AramSzunets struct {
@@ -54,31 +55,36 @@ func (a *AramSzunets) Load() {
 			fmt.Println("ERROR: ", err.Error())
 			break
 		}
-		a.List = append(a.List, a.parseStruct(rStr))
+		a.List = append(a.List, NewAramSzunet(rStr))
 	}
-	fmt.Println("Count AramSzunet ", len(a.List))
+	log.Println("Áramszünet darabszám: ", len(a.List))
 }
 
-func (a *AramSzunets) parseStruct(data []string) *AramSzunet {
-	return &AramSzunet{
+func (a *AramSzunet) Vegpont() string {
+	return fmt.Sprintf("%s %s", a.Varos, a.Terulet_mod)
+}
+
+func NewAramSzunet(data []string) *AramSzunet {
+	a := &AramSzunet{
 		ID:         data[0],
 		Datum:      data[1],
 		Idoszak:    data[2],
 		Varos:      data[3],
 		VarosLink:  data[4],
-		Terulet:    a.Modify(data[5]),
+		Terulet:    data[5],
 		Megjegyzes: data[6],
 		Forras:     data[7],
 		Bekerules:  data[8],
 	}
+	a.setTerulet(data[5])
+	return a
 }
 
-func (a *AramSzunet) Vegpont() string {
-	return fmt.Sprintf("%s %s", a.Varos, a.Terulet)
-}
-
-func (a *AramSzunets) Modify(s string) string {
+func (a *AramSzunet) setTerulet(s string) {
 	pattern := regexp.MustCompile(`(?:\.| utca|\:|hrsz|dűlő| - Egész| liget| puszta).+`)
-	s = pattern.ReplaceAllString(s, "")
-	return s
+	a.Terulet_mod = pattern.ReplaceAllString(s, "")
+}
+
+func (a *AramSzunet) String() string {
+	return fmt.Sprintf("%s %s - %s; %s", a.ID, a.Datum, a.Idoszak, a.Terulet)
 }

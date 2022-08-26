@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/MackoMici/aram/internal"
 )
@@ -11,8 +11,9 @@ func main() {
 	am := internal.NewActiveModems("./activemodemlist.csv")
 
 	for _, a := range asz.List {
+
 		if v := am.Vegpont(a.Vegpont()); v != nil {
-			log.Printf("Végpont létezik %#v => %#v\n\n", a, v)
+			fmt.Printf("Áramszünet miatt ellenőrizni: %#s => %#s\n", a, v)
 		}
 	}
 }

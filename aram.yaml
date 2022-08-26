@@ -1,0 +1,3 @@
+vegpont_patterns:
+  - "^(?P<Varos>[\\S-]+)[ -]+(?P<Terulet>[\\S ]+)(?P<Maradek>(?: utca| tér| lakótelep| körút| út| szállás| hegy| telep| kert| erdészház| köz| park| puszta|  [0-9]+\\.).+)\\([0-9]+\\)?$"
+  - "^(?P<Varos>[\\S-]+)[ -]+(?P<Terulet>[\\S ]+)(?P<Maradek>(?: [0-9]+\\.).+)\\([0-9]+\\)?$"
