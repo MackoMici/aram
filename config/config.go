@@ -9,7 +9,9 @@ import (
 )
 
 type Config struct {
-	VegpontPatterns []string `yaml:"vegpont_patterns"`
+	VegpontPatterns        []string        `yaml:"vegpont_patterns"`
+	AramszunetPatterns     []string        `yaml:"aramszunet_patterns"`
+	AramszunetReplacements []*Replacements `yaml:"aramszunet_replacements"`
 }
 
 func NewConfig(file string) *Config {

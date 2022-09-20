@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"regexp"
+
+	"github.com/MackoMici/aram/config"
 )
 
 type AramSzunet struct {
@@ -20,6 +22,7 @@ type AramSzunet struct {
 	Forras      string
 	Bekerules   string
 	Terulet_mod string
+	TeljesTel   bool
 }
 
 type AramSzunets struct {
@@ -27,12 +30,25 @@ type AramSzunets struct {
 	file string
 }
 
-func NewAramSzunets(file string) *AramSzunets {
+var aram_patterns []*regexp.Regexp
+var aram_replace  []*config.Replacements
+
+func NewAramSzunets(file string, conf *config.Config) *AramSzunets {
 	am := &AramSzunets{
 		file: file,
 	}
-	am.Load()
 
+	for _, p  := range conf.AramszunetPatterns {
+		re, err := regexp.Compile(p)
+		if err != nil {
+			log.Println("Invalid pattern ", p, err)
+		}
+		aram_patterns = append(aram_patterns, re)
+	}
+	for _, p := range conf.AramszunetReplacements {
+		aram_replace = append(aram_replace, p)
+	}
+	am.Load()
 	return am
 }
 
@@ -81,10 +97,22 @@ func NewAramSzunet(data []string) *AramSzunet {
 }
 
 func (a *AramSzunet) setTerulet(s string) {
-	pattern := regexp.MustCompile(`(?:\.| utca|\:|hrsz|dűlő| - Egész| liget| puszta).+`)
-	a.Terulet_mod = pattern.ReplaceAllString(s, "")
+	re := regexp.MustCompile(`Teljes település`)
+	a.TeljesTel = re.MatchString(s)
+	for _, p := range aram_patterns {
+		a.Terulet_mod = teruletMod(p.ReplaceAllString(s, ""))
+	}
+}
+
+func teruletMod(s string) string {
+	if len(aram_replace) > 0 {
+		for _, r := range aram_replace {
+			s = r.Replace(s)
+		}
+	}
+	return s
 }
 
 func (a *AramSzunet) String() string {
-	return fmt.Sprintf("%s %s - %s; %s", a.ID, a.Datum, a.Idoszak, a.Terulet)
+	return fmt.Sprintf("%s %s - %s; %s %s", a.ID, a.Datum, a.Idoszak, a.Varos, a.Terulet)
 }

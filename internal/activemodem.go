@@ -38,20 +38,19 @@ type ActiveModems struct {
 	vegponts map[string]*ActiveModem
 }
 
-var patterns []*regexp.Regexp
+var veg_patterns []*regexp.Regexp
 
-func NewActiveModems(file string) *ActiveModems {
+func NewActiveModems(file string, conf *config.Config) *ActiveModems {
 	am := &ActiveModems{
 		file:     file,
 		vegponts: make(map[string]*ActiveModem),
 	}
-	conf := config.NewConfig("./aram.yaml")
 	for _, p  := range conf.VegpontPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
 			log.Println("Invalid pattern ", p, err)
 		}
-		patterns = append (patterns, re)
+		veg_patterns = append (veg_patterns, re)
 	}
 	am.Load()
 	return am
@@ -113,14 +112,11 @@ func NewActiveModem(data []string) *ActiveModem {
 }
 
 func (a *ActiveModem) setVegpont(s string) {
-	for _, p := range patterns {
+	for _, p := range veg_patterns {
 		if namedGroups := a.matchWithGroup(p, s); len(namedGroups) > 0 {
-			//			fmt.Printf("Processing: %s\n", s)
 			a.Varos = a.varos(namedGroups)
 			a.Terulet = a.terulet(namedGroups)
 			a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, a.Terulet)
-//			fmt.Printf("Processing: %s => %s, %s\n", s, a.Varos, a.Terulet)
-			//			maradek := a.Maradek(namedGroups)
 			break
 		}
 	}
