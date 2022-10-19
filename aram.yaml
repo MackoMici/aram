@@ -5,10 +5,19 @@ vegpont_patterns:
 aramszunet_patterns:
   - "(?i)(\\.| utca|\\:|hrsz|dűlő| - Egész| liget| puszta| hegy| szállás| tanya| köz| - Pár| tér| tere| lakótelep| körút| út| ltp| telep| kert| erdészház| park| sor| [0-9]+\\.)(.?)+"
 
+terulet_patterns:
+  - "(?i)(\\.| utca| u.| út| tér| sarok| [0-9]+\\.)(.?)+"
+
 aramszunet_replacements:
   - replacement: "Tury"
     match: "Túry"
     is_regex: true
   - replacement: "Vas Gereben"
     match: "Vass Gereben"
+    is_regex: true
+
+vegpont_replacements:
+# Pál utca helyett a Péter utcából kapja az áramot
+  - replacement: "Paks Péter"
+    match: "Paks Pál"
     is_regex: true

@@ -39,18 +39,22 @@ type ActiveModems struct {
 }
 
 var veg_patterns []*regexp.Regexp
+var veg_replace []*config.Replacements
 
 func NewActiveModems(file string, conf *config.Config) *ActiveModems {
 	am := &ActiveModems{
 		file:     file,
 		vegponts: make(map[string]*ActiveModem),
 	}
-	for _, p  := range conf.VegpontPatterns {
+	for _, p := range conf.VegpontPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
 			log.Println("Invalid pattern ", p, err)
 		}
-		veg_patterns = append (veg_patterns, re)
+		veg_patterns = append(veg_patterns, re)
+	}
+	for _, p := range conf.VegpontReplacements {
+		veg_replace = append(veg_replace, p)
 	}
 	am.Load()
 	return am
@@ -116,10 +120,20 @@ func (a *ActiveModem) setVegpont(s string) {
 		if namedGroups := a.matchWithGroup(p, s); len(namedGroups) > 0 {
 			a.Varos = a.varos(namedGroups)
 			a.Terulet = a.terulet(namedGroups)
-			a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, a.Terulet)
+			//			a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, a.Terulet)
+			a.Vegpont_mod = vegpontMod(p.ReplaceAllString(fmt.Sprintf("%s %s", a.Varos, a.Terulet), ""))
 			break
 		}
 	}
+}
+
+func vegpontMod(s string) string {
+	if len(veg_replace) > 0 {
+		for _, r := range veg_replace {
+			s = r.Replace(s)
+		}
+	}
+	return s
 }
 
 func (a *ActiveModem) matchWithGroup(r *regexp.Regexp, s string) map[string]string {
