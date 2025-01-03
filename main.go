@@ -12,10 +12,11 @@ import (
 func main() {
 	conf := config.NewConfig("./aram.yaml")
 	asz := internal.NewAramSzunets("./aramszunet.txt", conf)
-	am := internal.NewActiveModems("./activemodemlist.csv", conf)
+	node := internal.NewNodes("./nodeok.txt", conf)
 	fej := internal.NewFejallomasok("./fejallomas.txt", conf)
 	hoszt := internal.NewHoszts("./hoszt.txt", conf)
 	mux := internal.NewMuxs("./mux.txt", conf)
+	olt := internal.NewOlts("./olt.txt", conf)
 
 	f, err := os.Create("lehetseges_aramszunet.txt")
 
@@ -33,10 +34,11 @@ func main() {
 				log.Fatal(err)
 			}
 		} else {
-			v := am.Vegpont(a.Vegpont())
+			v := node.Vegpont(a.Vegpont())
 			z := fej.Vegpont(a.Vegpont())
 			x := hoszt.Vegpont(a.Vegpont())
 			y := mux.Vegpont(a.Vegpont())
+                        w := olt.Vegpont(a.Vegpont())
 			if v != nil {
 				_, err := fmt.Fprintln(f, "Áramszünet miatt ellenőrizni:", a, "=>", v)
 				if err != nil {
@@ -61,7 +63,13 @@ func main() {
 					log.Fatal(err)
 				}
 			}
-			if v == nil && z == nil && x == nil && y == nil {
+			if w != nil {
+				_, err := fmt.Fprintln(f, "OLT áramszünet miatt ellenőrizni:", a, "=>", w)
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+			if v == nil && z == nil && x == nil && y == nil && w == nil {
 				_, err := fmt.Fprintln(f, "Nem találtam node-ot az utcában:", a.ID, a.Datum, "-", a.Varos, a.Terulet)
 				if err != nil {
 					log.Fatal(err)

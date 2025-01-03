@@ -1,12 +1,8 @@
-vegpont_patterns:
-  - "^(?P<Varos>[\\S-]+)[ -]+(?P<Terulet>[\\S ]+)(?P<Maradek>(?: utca| tér| lakótelep| körút| út| szállás| hegy| telep| kert| erdészház| köz| park| puszta|  [0-9]+\\.).+)\\([0-9]+\\)?$"
-  - "^(?P<Varos>[\\S-]+)[ -]+(?P<Terulet>[\\S ]+)(?P<Maradek>(?: [0-9]+\\.).+)\\([0-9]+\\)?$"
-
 aramszunet_patterns:
-  - "(?i)(\\.| utca|\\:|hrsz|dűlő| - Egész| liget| puszta| hegy| szállás| tanya| köz| - Pár| tér| tere| lakótelep| körút| út| ltp| telep| kert| erdészház| park| sor| [0-9]+\\.)(.?)+"
+  - "(?i)( [0-9]+| [[:punct:]]|\\.|:| utca| hrsz|dűlő| - Egész| liget| sétány | puszta| hegy| szállás| tanya| köz| körzet| völgy| - Pár| tér| tere| lakótelep| körút| út| ltp| telep| kert| erdészház| park| sor| [0-9]+\\.)(.?)+"
 
-terulet_patterns:
-  - "(?i)(\\.| utca| u.| út| tér| sarok| [0-9]+\\.)(.?)+"
+terulet_patterns:	
+  - "(?i)(\\.| utca| krt.| kert| köz| telep| lakótelep| út| park| tér| sarok| sétány| [0-9]+|\\.)(.?)+"
 
 aramszunet_replacements:
   - replacement: "Tury"
@@ -15,9 +11,6 @@ aramszunet_replacements:
   - replacement: "Vas Gereben"
     match: "Vass Gereben"
     is_regex: true
-
-vegpont_replacements:
-# Pál utca helyett a Péter utcából kapja az áramot
-  - replacement: "Paks Péter"
-    match: "Paks Pál"
+  - replacement: "Széchenyi István"
+    match: "Gróf Széchenyi István"
     is_regex: true

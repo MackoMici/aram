@@ -65,7 +65,7 @@ func (a *Muxs) Load() {
 		a.List = append(a.List, am)
 		a.vegponts[am.Vegpont_mod] = am
 	}
-	log.Println("Fejallomás darabszám: ", len(a.List))
+	log.Println("Mux darabszám: ", len(a.List))
 }
 
 func (a *Muxs) Vegpont(vegpont string) *Mux {
