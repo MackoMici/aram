@@ -7,15 +7,18 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 )
 
 type Mux struct {
-	Nev         string
-	Varos       string
-	Terulet     string
-	Vegpont_mod string
+	Nev          string
+	Varos        string
+	Terulet      string
+	Vegpont_mod1 string
+	Vegpont_mod2 string
+	Sarok        bool
 }
 
 type Muxs struct {
@@ -63,7 +66,10 @@ func (a *Muxs) Load() {
 		}
 		am := NewMux(rStr)
 		a.List = append(a.List, am)
-		a.vegponts[am.Vegpont_mod] = am
+		if am.Sarok {
+			a.vegponts[am.Vegpont_mod2] = am
+		}
+		a.vegponts[am.Vegpont_mod1] = am
 	}
 	log.Println("Mux darabszám: ", len(a.List))
 }
@@ -81,13 +87,21 @@ func NewMux(data []string) *Mux {
 		Varos:   data[1],
 		Terulet: data[2],
 	}
-	a.setVegpont()
+	a.setVegpont(data[2])
 	return a
 }
 
-func (a *Mux) setVegpont() {
+func (a *Mux) setVegpont(s string) {
+	re := regexp.MustCompile(` sarok`)
+        a.Sarok = re.MatchString(s)
 	for _, p := range mux_patterns {
-		a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(a.Terulet, ""))
+		if a.Sarok {
+			r := strings.Split(s, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+		} else {
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+		}
 		break
 	}
 }

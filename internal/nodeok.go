@@ -7,17 +7,20 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 )
 
 type Node struct {
-	Irszam      string
-	Varos       string
-	Node        string
-        Terulet     string
-	nfo         string
-        Vegpont_mod string
+	Irszam       string
+	Varos        string
+	Node         string
+        Terulet      string
+	nfo          string
+        Vegpont_mod1 string
+	Vegpont_mod2 string
+	Sarok        bool
 }
 
 type Nodes struct {
@@ -65,7 +68,10 @@ func (a *Nodes) Load() {
 		}
 		am := NewNode(rStr)
 		a.List = append(a.List, am)
-		a.vegponts[am.Vegpont_mod] = am
+		if am.Sarok {
+			a.vegponts[am.Vegpont_mod2] = am
+		}
+		a.vegponts[am.Vegpont_mod1] = am
 	}
 	log.Println("Node darabszám: ", len(a.List))
 }
@@ -85,13 +91,21 @@ func NewNode(data []string) *Node {
 		Terulet: data[3],
                 nfo:     data[4],
 	}
-	a.setVegpont()
+	a.setVegpont(data[3])
 	return a
 }
 
-func (a *Node) setVegpont() {
+func (a *Node) setVegpont(s string) {
+	re := regexp.MustCompile(` sarok`)
+        a.Sarok = re.MatchString(s)
 	for _, p := range node_patterns {
-		a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(a.Terulet, ""))
+		if a.Sarok {
+			r := strings.Split(s, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+		} else {
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+		}
 		break
 	}
 }

@@ -14,3 +14,6 @@ aramszunet_replacements:
   - replacement: "Széchenyi István"
     match: "Gróf Széchenyi István"
     is_regex: true
+  - replacement: "Teleki József"
+    match: "Gróf Teleki József"
+    is_regex: true

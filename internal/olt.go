@@ -7,15 +7,18 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 )
 
 type Olt struct {
-	Nev         string
-	Varos       string
-	Terulet     string
-	Vegpont_mod string
+	Nev          string
+	Varos        string
+	Terulet      string
+	Vegpont_mod1 string
+	Vegpont_mod2 string
+	Sarok        bool
 }
 
 type Olts struct {
@@ -63,7 +66,10 @@ func (a *Olts) Load() {
 		}
 		am := NewOlt(rStr)
 		a.List = append(a.List, am)
-		a.vegponts[am.Vegpont_mod] = am
+		if am.Sarok {
+			a.vegponts[am.Vegpont_mod2] = am
+		}
+		a.vegponts[am.Vegpont_mod1] = am
 	}
 	log.Println("Olt darabszám: ", len(a.List))
 }
@@ -81,13 +87,21 @@ func NewOlt(data []string) *Olt {
 		Varos:   data[1],
 		Terulet: data[2],
 	}
-	a.setVegpont()
+	a.setVegpont(data[2])
 	return a
 }
 
-func (a *Olt) setVegpont() {
+func (a *Olt) setVegpont(s string) {
+	re := regexp.MustCompile(` sarok`)
+        a.Sarok = re.MatchString(s)
 	for _, p := range olt_patterns {
-		a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(a.Terulet, ""))
+		if a.Sarok {
+			r := strings.Split(s, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+		} else {
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+		}
 		break
 	}
 }

@@ -7,16 +7,19 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 )
 
 type Fejallomas struct {
-	Nev         string
-	Irszam      string
-	Varos       string
-	Terulet     string
-	Vegpont_mod string
+	Nev          string
+	Irszam       string
+	Varos        string
+	Terulet      string
+	Vegpont_mod1 string
+	Vegpont_mod2 string
+	Sarok        bool
 }
 
 type Fejallomasok struct {
@@ -64,7 +67,10 @@ func (a *Fejallomasok) Load() {
 		}
 		am := NewFejallomas(rStr)
 		a.List = append(a.List, am)
-		a.vegponts[am.Vegpont_mod] = am
+		if am.Sarok {
+			a.vegponts[am.Vegpont_mod2] = am
+		}
+		a.vegponts[am.Vegpont_mod1] = am
 	}
 	log.Println("Fejallomás darabszám: ", len(a.List))
 }
@@ -83,13 +89,21 @@ func NewFejallomas(data []string) *Fejallomas {
 		Varos:   data[2],
 		Terulet: data[3],
 	}
-	a.setVegpont()
+	a.setVegpont(data[3])
 	return a
 }
 
-func (a *Fejallomas) setVegpont() {
+func (a *Fejallomas) setVegpont(s string) {
+	re := regexp.MustCompile(` sarok`)
+        a.Sarok = re.MatchString(s)
 	for _, p := range fej_patterns {
-		a.Vegpont_mod = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(a.Terulet, ""))
+		if a.Sarok {
+			r := strings.Split(s, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+		} else {
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+		}
 		break
 	}
 }
