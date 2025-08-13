@@ -47,14 +47,14 @@ func NewAramSzunets(file string, conf *config.Config) *AramSzunets {
 		file: file,
 	}
 
-	for _, p  := range conf.AramszunetPatterns {
+	for _, p := range conf.AramszunetPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
 			logging.Logger.Error("Érvénytelen pattern ", p, err)
 		}
 		aram_patterns = append(aram_patterns, re)
 	}
-	for _, p  := range conf.HazszamPatterns {
+	for _, p := range conf.HazszamPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
 			logging.Logger.Error("Érvénytelen pattern ", p, err)
