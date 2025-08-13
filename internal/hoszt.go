@@ -4,40 +4,42 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"regexp"
 	"strings"
+	"strconv"
 
 	"github.com/MackoMici/aram/config"
+	"github.com/MackoMici/aram/logging"
 )
 
 type Hoszt struct {
 	Irszam       string
 	Varos        string
 	Terulet      string
+	Hazszam      int
 	Vegpont_mod1 string
 	Vegpont_mod2 string
 	Sarok        bool
 }
 
 type Hoszts struct {
-	List     []*Hoszt
-	file     string
-	vegponts map[string]*Hoszt
+	List  []*Hoszt
+	file  string
+	index map[string]map[string]map[int]*Hoszt
 }
 
 var hoszt_patterns []*regexp.Regexp
 
 func NewHoszts(file string, conf *config.Config) *Hoszts {
 	am := &Hoszts{
-		file:     file,
-		vegponts: make(map[string]*Hoszt),
+		file:  file,
+		index: make(map[string]map[string]map[int]*Hoszt),
 	}
 	for _, p := range conf.TeruletPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
-			log.Println("Invalid pattern ", p, err)
+			logging.Logger.Error("Érvénytelen pattern ", p, err)
 		}
 		hoszt_patterns = append(hoszt_patterns, re)
 	}
@@ -49,10 +51,9 @@ func (a *Hoszts) Load() {
 	// open file
 	f, err := os.Open(a.file)
 	if err != nil {
-		log.Fatal(err)
+		logging.Fatal("Hoszt fájl megnyitás", "hiba", err)
 	}
 	defer f.Close()
-
 	fcsv := csv.NewReader(f)
 	fcsv.Comma = '\t'
 	for {
@@ -61,22 +62,54 @@ func (a *Hoszts) Load() {
 			break
 		}
 		if err != nil {
-			log.Println("ERROR: ", err.Error())
+			logging.Logger.Error("Hoszt", "Load", err.Error())
 			break
 		}
 		am := NewHoszt(rStr)
 		a.List = append(a.List, am)
-		if am.Sarok {
-			a.vegponts[am.Vegpont_mod2] = am
-		}
-		a.vegponts[am.Vegpont_mod1] = am
 	}
-	log.Println("Hoszt darabszám: ", len(a.List))
+	logging.Logger.Info("Hoszt", "darab", len(a.List))
+	a.BuildIndex()
 }
 
-func (a *Hoszts) Vegpont(vegpont string) *Hoszt {
-	if v, ok := a.vegponts[vegpont]; ok {
-		return v
+func (a *Hoszts) BuildIndex() {
+	a.index = make(map[string]map[string]map[int]*Hoszt)
+	for _, hoszt := range a.List {
+		city, street, num := hoszt.Varos, hoszt.Vegpont_mod1, hoszt.Hazszam
+		// város tábla init
+		if a.index[city] == nil {
+			a.index[city] = make(map[string]map[int]*Hoszt)
+		}
+		// utca tábla init
+		if a.index[city][street] == nil {
+			a.index[city][street] = make(map[int]*Hoszt)
+		}
+		// indexelt házszám → Hoszt
+		a.index[city][street][num] = hoszt
+		if hoszt.Sarok {
+			street2 := hoszt.Vegpont_mod2
+			a.index[city][street2] = make(map[int]*Hoszt)
+			a.index[city][street2][num] = hoszt
+		}
+	}
+	logging.Logger.Debug("Hoszt index", "lista", a.index)
+}
+
+func (a *Hoszts) Find(city, street string, number int) *Hoszt {
+	if a.index == nil {
+		a.BuildIndex()
+	}
+	if cityMap, ok := a.index[city]; ok {
+		if streetMap, ok := cityMap[street]; ok {
+			if m, ok := streetMap[number]; ok {
+				return m
+			}
+			for _, m := range streetMap {
+				if m.Sarok {
+					return m
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -93,14 +126,23 @@ func NewHoszt(data []string) *Hoszt {
 
 func (a *Hoszt) setVegpont(s string) {
 	re := regexp.MustCompile(` sarok`)
-        a.Sarok = re.MatchString(s)
+		a.Sarok = re.MatchString(s)
 	for _, p := range hoszt_patterns {
+		parts := p.FindStringSubmatch(s)
+		streetRaw, numRaw := parts[1], parts[2]
 		if a.Sarok {
-			r := strings.Split(s, " - ")
-			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+			r := strings.Split(streetRaw, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, r[1])
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, r[0])
 		} else {
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, streetRaw)
+			if numRaw != "" {
+				i, err := strconv.Atoi(numRaw)
+				if err != nil {
+					logging.Logger.Error("Hoszt", numRaw, err.Error())
+				}
+				a.Hazszam = i
+			}
 		}
 		break
 	}

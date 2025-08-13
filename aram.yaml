@@ -1,8 +1,20 @@
 aramszunet_patterns:
-  - "(?i)( [0-9]+| [[:punct:]]|\\.|:| utca| hrsz|dűlő| - Egész| liget| sétány | puszta| hegy| szállás| tanya| köz| körzet| völgy| - Pár| tér| tere| lakótelep| körút| út| ltp| telep| kert| erdészház| park| sor| [0-9]+\\.)(.?)+"
+  - '(.+?)(?:\s+(?:utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor)\b)?(?:\s+([-,\d].*))?$'
+
+hazszam_patterns:
+  - '\d+(?:[./]\w+)?(?:\.\s*)?\s*-\s*\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?|\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?'
+
+clean_patterns:
+  - '((/|\.)[A-Za-z0-9]*)'
+
+kizar_patterns:
+  - '\d+(\/|-)\d+'
+  - '(\bhr[sz]*?)\.?\b'
+  - 'elott|M'
+  - '\b\d{4,}\b'
 
 terulet_patterns:	
-  - "(?i)(\\.| utca| krt.| kert| köz| telep| lakótelep| út| park| tér| sarok| sétány| [0-9]+|\\.)(.?)+"
+  - '(.+?)(?:\s+(?:utca|krt.|kert|köz|telep|lakótelep|út|park|tér|sarok|sétány)\b)?(?:\s+(\d*))?$'
 
 aramszunet_replacements:
   - replacement: "Tury"
@@ -16,4 +28,64 @@ aramszunet_replacements:
     is_regex: true
   - replacement: "Teleki József"
     match: "Gróf Teleki József"
+    is_regex: true
+  - replacement: "Hrsz"
+    match: "Hrsz."
+    is_regex: true
+  - replacement: "Sárbogárd"
+    match: "Sárbogárd, Ii"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Andráshida 1"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Bazita"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Becsali"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Besenyő"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Botfa"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Csács 1"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Csácsihegy"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Ebergény"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Egerszeghegy"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Erzsébethegy"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Gogánhegy"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Jánkahegy"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Kaszaháza"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Kertváros"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Neszele"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Ola Külváros"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Pózva"
+    is_regex: true
+  - replacement: "Zalaegerszeg"
+    match: "Zalaegerszeg, Vorhota"
     is_regex: true

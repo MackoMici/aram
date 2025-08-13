@@ -4,12 +4,13 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"regexp"
 	"strings"
+	"strconv"
 
 	"github.com/MackoMici/aram/config"
+	"github.com/MackoMici/aram/logging"
 )
 
 type Fejallomas struct {
@@ -17,28 +18,29 @@ type Fejallomas struct {
 	Irszam       string
 	Varos        string
 	Terulet      string
+	Hazszam      int
 	Vegpont_mod1 string
 	Vegpont_mod2 string
 	Sarok        bool
 }
 
 type Fejallomasok struct {
-	List     []*Fejallomas
-	file     string
-	vegponts map[string]*Fejallomas
+	List  []*Fejallomas
+	file  string
+	index map[string]map[string]map[int]*Fejallomas
 }
 
 var fej_patterns []*regexp.Regexp
 
 func NewFejallomasok(file string, conf *config.Config) *Fejallomasok {
 	am := &Fejallomasok{
-		file:     file,
-		vegponts: make(map[string]*Fejallomas),
+		file:  file,
+		index: make(map[string]map[string]map[int]*Fejallomas),
 	}
 	for _, p := range conf.TeruletPatterns {
 		re, err := regexp.Compile(p)
 		if err != nil {
-			log.Println("Invalid pattern ", p, err)
+			logging.Logger.Error("Érvénytelen pattern ", p, err)
 		}
 		fej_patterns = append(fej_patterns, re)
 	}
@@ -50,10 +52,9 @@ func (a *Fejallomasok) Load() {
 	// open file
 	f, err := os.Open(a.file)
 	if err != nil {
-		log.Fatal(err)
+		logging.Fatal("Fejállomás fájl megnyitás", "hiba", err)
 	}
 	defer f.Close()
-
 	fcsv := csv.NewReader(f)
 	fcsv.Comma = '\t'
 	for {
@@ -62,22 +63,54 @@ func (a *Fejallomasok) Load() {
 			break
 		}
 		if err != nil {
-			log.Println("ERROR: ", err.Error())
+			logging.Logger.Error("Fejállomás", "Load", err.Error())
 			break
 		}
 		am := NewFejallomas(rStr)
 		a.List = append(a.List, am)
-		if am.Sarok {
-			a.vegponts[am.Vegpont_mod2] = am
-		}
-		a.vegponts[am.Vegpont_mod1] = am
 	}
-	log.Println("Fejallomás darabszám: ", len(a.List))
+	logging.Logger.Info("Fejállomás", "darab", len(a.List))
+	a.BuildIndex()
 }
 
-func (a *Fejallomasok) Vegpont(vegpont string) *Fejallomas {
-	if v, ok := a.vegponts[vegpont]; ok {
-		return v
+func (a *Fejallomasok) BuildIndex() {
+	a.index = make(map[string]map[string]map[int]*Fejallomas)
+	for _, fejallomas := range a.List {
+		city, street, num := fejallomas.Varos, fejallomas.Vegpont_mod1, fejallomas.Hazszam		
+		// város tábla init
+		if a.index[city] == nil {
+			a.index[city] = make(map[string]map[int]*Fejallomas)
+		}
+		// utca tábla init
+		if a.index[city][street] == nil {
+			a.index[city][street] = make(map[int]*Fejallomas)
+		}
+		// indexelt házszám → Fejallomas
+		a.index[city][street][num] = fejallomas
+		if fejallomas.Sarok {
+			street2 := fejallomas.Vegpont_mod2
+			a.index[city][street2] = make(map[int]*Fejallomas)
+			a.index[city][street2][num] = fejallomas
+		}
+	}
+	logging.Logger.Debug("Fejállomás index", "lista", a.index)
+}
+
+func (a *Fejallomasok) Find(city, street string, number int) *Fejallomas {
+	if a.index == nil {
+		a.BuildIndex()
+	}
+	if cityMap, ok := a.index[city]; ok {
+		if streetMap, ok := cityMap[street]; ok {
+			if m, ok := streetMap[number]; ok {
+				return m
+			}
+			for _, m := range streetMap {
+				if m.Sarok {
+					return m
+				}
+			}
+		}
 	}
 	return nil
 }
@@ -95,14 +128,23 @@ func NewFejallomas(data []string) *Fejallomas {
 
 func (a *Fejallomas) setVegpont(s string) {
 	re := regexp.MustCompile(` sarok`)
-        a.Sarok = re.MatchString(s)
+	a.Sarok = re.MatchString(s)
 	for _, p := range fej_patterns {
+		parts := p.FindStringSubmatch(s)
+		streetRaw, numRaw := parts[1], parts[2]
 		if a.Sarok {
-			r := strings.Split(s, " - ")
-			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[1], ""))
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(r[0], ""))
+			r := strings.Split(streetRaw, " - ")
+			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, r[1])
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, r[0])
 		} else {
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, p.ReplaceAllString(s, ""))
+			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, streetRaw)
+			if numRaw != "" {
+				i, err := strconv.Atoi(numRaw)
+				if err != nil {
+					logging.Logger.Error("Fejállomás", numRaw, err.Error())
+				}
+				a.Hazszam = i
+			}
 		}
 		break
 	}
