@@ -38,8 +38,12 @@ func Init(debugMode bool) {
 
 	if debugMode {
 		var err error
-		debugFile, err = os.OpenFile("logs/debug.json",
-			os.O_CREATE|os.O_WRONLY|os.O_APPEND, 00666)
+		if _, err := os.Stat("log"); os.IsNotExist(err) {
+			os.Mkdir("log", os.ModeDir|0755)
+		}
+
+		debugFile, err = os.OpenFile("log/debug.json",
+			os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
 			panic("Nem lehet megnyitni a debug log fájlt: " + err.Error())
 		}

@@ -21,7 +21,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v2.0.1")
+	logging.Logger.Info("Program elindult", "verzió", "v2.0.2")
 	logging.Logger.Debug("Debug mód aktív", "modul", "aram")
 	conf  := config.NewConfig("./aram.yaml")
 	asz   := internal.NewAramSzunets("./aramszunet.txt", conf)
