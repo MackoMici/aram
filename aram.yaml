@@ -1,5 +1,6 @@
 aramszunet_patterns:
-  - '(.+?)(?:\s+(?:utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor)\b)?(?:\s+([-,\d].*))?$'
+
+  - ^(.+?)(?:\s+(utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor))?(?:\s+([-,\d].*))?$
 
 hazszam_patterns:
   - '\d+(?:[./]\w+)?(?:\.\s*)?\s*-\s*\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?|\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?'

@@ -109,9 +109,19 @@ func (a *AramSzunets) Load() {
 
 func (a *AramSzunets) BuildIndex() {
 	a.index = make(map[string]map[string]map[int][]*AramSzunet)
+	hrszSeen := make(map[string]bool) // városonkénti hrsz nyilvántartás
 	for _, rec := range a.List {
 		city := rec.Varos
 		street := rec.Terulet_mod
+		dateKey := city + "|" + rec.Datum
+
+		if strings.Contains(strings.ToLower(street), "hrsz") {
+			if hrszSeen[dateKey] {
+				continue
+			}
+			hrszSeen[dateKey] = true
+		}
+
 		if rec.Hazszamok == nil || len(rec.Hazszamok) == 0 {
 			rec.Hazszamok = []int{0} // ha nincs házszám, akkor legyen 0
 		}
@@ -162,7 +172,7 @@ func (a *AramSzunet) setTerulet(s string) {
 	a.TeljesTel = re.MatchString(s)
 	for _, p := range aram_patterns {
 		parts := p.FindStringSubmatch(s)
-		streetRaw, numsRaw := parts[1], parts[2]
+		streetRaw, numsRaw := parts[1], parts[3]
 		a.Terulet_mod = teruletMod(streetRaw)
 		if numsRaw != "" {
 			nums, err := parseHouseNumbers(numsRaw)

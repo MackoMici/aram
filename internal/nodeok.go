@@ -28,7 +28,7 @@ type Node struct {
 type Nodes struct {
 	List  []*Node
 	file  string
-	index map[string]map[string]map[int]*Node
+	index map[string]map[string]map[int][]*Node
 }
 
 var node_patterns []*regexp.Regexp
@@ -36,7 +36,7 @@ var node_patterns []*regexp.Regexp
 func NewNodes(file string, conf *config.Config) *Nodes {
 	am := &Nodes{
 		file:  file,
-		index: make(map[string]map[string]map[int]*Node),
+		index: make(map[string]map[string]map[int][]*Node),
 	}
 	for _, p := range conf.TeruletPatterns {
 		re, err := regexp.Compile(p)
@@ -75,42 +75,51 @@ func (a *Nodes) Load() {
 }
 
 func (a *Nodes) BuildIndex() {
-	a.index = make(map[string]map[string]map[int]*Node)
+	a.index = make(map[string]map[string]map[int][]*Node)
 	for _, node := range a.List {
 		city, street, num := node.Varos, node.Vegpont_mod1, node.Hazszam
 		// város tábla init
 		if a.index[city] == nil {
-			a.index[city] = make(map[string]map[int]*Node)
+			a.index[city] = make(map[string]map[int][]*Node)
 		}
 		// utca tábla init
 		if a.index[city][street] == nil {
-			a.index[city][street] = make(map[int]*Node)
+			a.index[city][street] = make(map[int][]*Node)
 		}
 		// indexelt házszám → Node
-		a.index[city][street][num] = node
+		a.index[city][street][num] = append(a.index[city][street][num], node)
 		if node.Sarok {
 			street2 := node.Vegpont_mod2
-			a.index[city][street2] = make(map[int]*Node)
-			a.index[city][street2][num] = node
+			if a.index[city][street2] == nil {
+				a.index[city][street2] = make(map[int][]*Node)
+			}
+			a.index[city][street2][num] = append(a.index[city][street2][num], node)
 		}
 	}
 	logging.Logger.Debug("Node index", "lista", a.index)
 }
 
-func (a *Nodes) Find(city, street string, number int) *Node {
+func (a *Nodes) Find(city, street string, number int) []*Node {
 	if a.index == nil {
 		a.BuildIndex()
 	}
 	if cityMap, ok := a.index[city]; ok {
 		if streetMap, ok := cityMap[street]; ok {
-			if m, ok := streetMap[number]; ok {
-				return m
+			if nodes, ok := streetMap[number]; ok {
+				return nodes
 			}
-			for _, m := range streetMap {
-				if m.Sarok {
-					return m
+			var sarokNodes []*Node
+			for _, nodeList := range streetMap {
+				for _, node := range nodeList {
+					if node.Sarok {
+						sarokNodes = append(sarokNodes, node)
 					}
+				}
 			}
+			if len(sarokNodes) > 0 {
+				return sarokNodes
+			}
+
 		}
 	}
 	return nil

@@ -24,7 +24,6 @@ type Kiiras struct {
 func main() {
 
 	kiirasok := []Kiiras{}
-	seenElements := make(map[string]bool)
 
 	// Parancssori kapcsoló: -debug
 	debugMode := flag.Bool("debug", false, "Debug mód engedélyezése")
@@ -36,8 +35,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v2.0.3")
-	logging.Logger.Debug("Debug mód aktív", "modul", "aram")
+	logging.Logger.Info("Program elindult", "verzió", "v2.0.6")
 	conf  := config.NewConfig("./aram.yaml")
 	asz   := internal.NewAramSzunets("./aramszunet.txt", conf)
 	node  := internal.NewNodes("./nodeok.txt", conf)
@@ -75,40 +73,47 @@ func main() {
 			})
 		} else {
 			for _, num := range a.Hazszamok {
-				if y := mux.Find(a.Varos, a.Terulet_mod, num); y != nil {
-					key := fmt.Sprintf("MUX-%s-%s-%d", a.Varos, a.Terulet_mod, num)
-					if !seenElements[key] {
-						kiirasok = append(kiirasok, Kiiras{"MUX", fmt.Sprintf("MUX áramszünet miatt ellenőrizni: %v => %v", a, y), datum, id})
-						seenElements[key] = true
+				if vs := node.Find(a.Varos, a.Terulet_mod, num); vs != nil {
+					for _, v := range vs {
+						kiirasok = append(kiirasok, Kiiras{
+							Tipus: fmt.Sprintf("NODE: %s", v.Node), // vagy v.Name, ha az a mező neve
+							Adat:  fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v", a, v),
+							Datum: datum,
+							Id:    id,
+						})
 					}
 				}
-				if v := node.Find(a.Varos, a.Terulet_mod, num); v != nil {
-					key := fmt.Sprintf("NODE-%s-%s-%d", a.Varos, a.Terulet_mod, num)
-					if !seenElements[key] {
-						kiirasok = append(kiirasok, Kiiras{"NODE", fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v", a, v), datum, id})
-						seenElements[key] = true
-					}
+				if y := mux.Find(a.Varos, a.Terulet_mod, num); y != nil {
+					kiirasok = append(kiirasok, Kiiras{
+						Tipus: fmt.Sprintf("MUX: %s", y.Nev), // vagy y.Name, ha az a mező neve
+						Adat:  fmt.Sprintf("Mux áramszünet miatt ellenőrizni: %v => %v", a, y),
+						Datum: datum,
+						Id:    id,
+					})
 				}
 				if z := fej.Find(a.Varos, a.Terulet_mod, num); z != nil {
-					key := fmt.Sprintf("FEJ-%s-%s-%d", a.Varos, a.Terulet_mod, num)
-					if !seenElements[key] {
-						kiirasok = append(kiirasok, Kiiras{"FEJ", fmt.Sprintf("Fejállomás áramszünet miatt ellenőrizni: %v => %v", a, z), datum, id})
-						seenElements[key] = true
-					}
+					kiirasok = append(kiirasok, Kiiras{
+						Tipus: fmt.Sprintf("FEJ: %s", z.Nev), // vagy z.Name, ha az a mező neve
+						Adat:  fmt.Sprintf("Fejállomás áramszünet miatt ellenőrizni: %v => %v", a, z),
+						Datum: datum,
+						Id:    id,
+					})
 				}
 				if x := hoszt.Find(a.Varos, a.Terulet_mod, num); x != nil {
-					key := fmt.Sprintf("HOSZT-%s-%s-%d", a.Varos, a.Terulet_mod, num)
-					if !seenElements[key] {
-						kiirasok = append(kiirasok, Kiiras{"HOSZT", fmt.Sprintf("Hoszt áramszünet miatt ellenőrizni: %v => %v", a, x), datum, id})
-						seenElements[key] = true
-					}
+					kiirasok = append(kiirasok, Kiiras{
+						Tipus: fmt.Sprintf("HOSZT: %s", x.Varos), // vagy x.Name, ha az a mező neve
+						Adat:  fmt.Sprintf("Hoszt áramszünet miatt ellenőrizni: %v => %v", a, x),
+						Datum: datum,
+						Id:    id,
+					})
 				}
 				if w := olt.Find(a.Varos, a.Terulet_mod, num); w != nil {
-					key := fmt.Sprintf("OLT-%s-%s-%d", a.Varos, a.Terulet_mod, num)
-					if !seenElements[key] {
-						kiirasok = append(kiirasok, Kiiras{"OLT", fmt.Sprintf("OLT áramszünet miatt ellenőrizni: %v => %v", a, w), datum, id})
-						seenElements[key] = true
-					}
+					kiirasok = append(kiirasok, Kiiras{
+						Tipus: fmt.Sprintf("OLT: %s", w.Nev), // vagy w.Name, ha az a mező neve
+						Adat:  fmt.Sprintf("OLT áramszünet miatt ellenőrizni: %v => %v", a, w),
+						Datum: datum,
+						Id:    id,
+					})
 				}
 			}
 		}
@@ -121,14 +126,16 @@ func main() {
 	})
 
 	// fájlba írás a végén
-	seenIds := make(map[int]bool)
+	seenIds := make(map[Kiiras]bool)
 
 	for _, k := range kiirasok {
 		
-		if seenIds[k.Id] {
-			continue // már kiírtuk ezt az ID-t
+		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "adat", k.Adat, "datum", k.Datum, "id", k.Id)
+		key := Kiiras{Tipus: k.Tipus, Id: k.Id}
+		if seenIds[key] {
+			continue // már kiírtuk ezt a Tipus+Id kombinációt
 		}
-		seenIds[k.Id] = true
+		seenIds[key] = true
 
 		_, err := fmt.Fprintln(f, k.Adat)
 		if err != nil {
