@@ -134,10 +134,10 @@ func (a *Fejallomas) setVegpont(s string) {
 		streetRaw, numRaw := parts[1], parts[2]
 		if a.Sarok {
 			r := strings.Split(streetRaw, " - ")
-			a.Vegpont_mod2 = fmt.Sprintf("%s %s", a.Varos, r[1])
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, r[0])
+			a.Vegpont_mod2 = r[1]
+			a.Vegpont_mod1 = r[0]
 		} else {
-			a.Vegpont_mod1 = fmt.Sprintf("%s %s", a.Varos, streetRaw)
+			a.Vegpont_mod1 = streetRaw
 			if numRaw != "" {
 				i, err := strconv.Atoi(numRaw)
 				if err != nil {

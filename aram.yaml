@@ -1,6 +1,6 @@
 aramszunet_patterns:
 
-  - ^(.+?)(?:\s+(utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor))?(?:\s+([-,\d].*))?$
+  - ^(.+?)(?:\s+(utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|király|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor))?(?:\s+([-,\d].*))?$
 
 hazszam_patterns:
   - '\d+(?:[./]\w+)?(?:\.\s*)?\s*-\s*\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?|\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?'
@@ -15,7 +15,7 @@ kizar_patterns:
   - '\b\d{4,}\b'
 
 terulet_patterns:	
-  - '(.+?)(?:\s+(?:utca|krt.|kert|köz|telep|lakótelep|út|park|tér|sarok|sétány)\b)?(?:\s+(\d*))?$'
+  - '(.+?)(?:\s+(?:utca|krt\.?|kert|köz|telep|lakótelep|út|park|tér|sarok|sétány|szállás|útja|király))?(?:\s+(\d+))?$'
 
 aramszunet_replacements:
   - replacement: "Tury"
