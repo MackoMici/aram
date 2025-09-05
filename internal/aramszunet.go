@@ -1,3 +1,5 @@
+//Felolvassa az aramszunet.txt file-t és szétbontja majd csinál egy indexet belőle varos-utca-házszám szintjén, hogy később lehessen keresni benne
+
 package internal
 
 import (

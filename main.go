@@ -1,3 +1,5 @@
+//Megvizsgálja hogy az adott végpont (hoszt, node, mux, olt, fejáll.) megtalálható-e az adott áramszünetes listában ha igen akkor kiírja dátum szerint rendezve, és minden találatot csak 1* fog kiírni
+
 package main
 
 import (
@@ -35,7 +37,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v2.0.6")
+	logging.Logger.Info("Program elindult", "verzió", "v2.0.7")
 	conf  := config.NewConfig("./aram.yaml")
 	asz   := internal.NewAramSzunets("./aramszunet.txt", conf)
 	node  := internal.NewNodes("./nodeok.txt", conf)

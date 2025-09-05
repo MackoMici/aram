@@ -15,7 +15,7 @@ kizar_patterns:
   - '\b\d{4,}\b'
 
 terulet_patterns:	
-  - '(.+?)(?:\s+(?:utca|krt\.?|kert|köz|telep|lakótelep|út|park|tér|sarok|sétány|szállás|útja|király))?(?:\s+(\d+))?$'
+  - '(.+?)(?:\s+(?:utca|krt\.?|kert|köz|sor|telep|lakóház|tömb|erdészház|puszta|lakótelep|út|park|tér|sarok|sétány|szállás|útja|király))?(?:\s+(\d+))?$'
 
 aramszunet_replacements:
   - replacement: "Tury"

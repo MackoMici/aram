@@ -1,3 +1,5 @@
+//Felolvassa a nodeok.txt file-t és szétbontja majd csinál egy indexet belőle varos-utca-házszám szintjén, hogy később tudja ellenőrizni, hogy az áramszünet listában megtalálható a cím
+
 package internal
 
 import (
