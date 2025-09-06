@@ -8,8 +8,6 @@ import (
 	"os"
 	"sort"
 	"time"
-	"strings"
-	"strconv"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/internal"
@@ -20,7 +18,6 @@ type Kiiras struct {
 	Tipus string
 	Adat  string
 	Datum time.Time
-	Id    int
 }
 
 func main() {
@@ -37,7 +34,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v2.0.7")
+	logging.Logger.Info("Program elindult", "verzió", "v2.0.8")
 	conf  := config.NewConfig("./aram.yaml")
 	asz   := internal.NewAramSzunets("./aramszunet.txt", conf)
 	node  := internal.NewNodes("./nodeok.txt", conf)
@@ -61,17 +58,11 @@ func main() {
 			logging.Fatal("Dátum parse hiba", "hiba", err)
 		}
 
-		id, err := toInt(a.ID)
-		if err != nil {
-			logging.Fatal("Id parse hiba", "hiba", err)
-		}
-
 		if a.TeljesTel {
 			kiirasok = append(kiirasok, Kiiras{
 				Tipus: "TELJES",
 				Adat:  fmt.Sprintf("A teljes település megáll: %v", a),
 				Datum: datum,
-				Id:    id,
 			})
 		} else {
 			for _, num := range a.Hazszamok {
@@ -81,7 +72,6 @@ func main() {
 							Tipus: fmt.Sprintf("NODE: %s", v.Node), // vagy v.Name, ha az a mező neve
 							Adat:  fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v", a, v),
 							Datum: datum,
-							Id:    id,
 						})
 					}
 				}
@@ -90,7 +80,6 @@ func main() {
 						Tipus: fmt.Sprintf("MUX: %s", y.Nev), // vagy y.Name, ha az a mező neve
 						Adat:  fmt.Sprintf("Mux áramszünet miatt ellenőrizni: %v => %v", a, y),
 						Datum: datum,
-						Id:    id,
 					})
 				}
 				if z := fej.Find(a.Varos, a.Terulet_mod, num); z != nil {
@@ -98,7 +87,6 @@ func main() {
 						Tipus: fmt.Sprintf("FEJ: %s", z.Nev), // vagy z.Name, ha az a mező neve
 						Adat:  fmt.Sprintf("Fejállomás áramszünet miatt ellenőrizni: %v => %v", a, z),
 						Datum: datum,
-						Id:    id,
 					})
 				}
 				if x := hoszt.Find(a.Varos, a.Terulet_mod, num); x != nil {
@@ -106,7 +94,6 @@ func main() {
 						Tipus: fmt.Sprintf("HOSZT: %s", x.Varos), // vagy x.Name, ha az a mező neve
 						Adat:  fmt.Sprintf("Hoszt áramszünet miatt ellenőrizni: %v => %v", a, x),
 						Datum: datum,
-						Id:    id,
 					})
 				}
 				if w := olt.Find(a.Varos, a.Terulet_mod, num); w != nil {
@@ -114,7 +101,6 @@ func main() {
 						Tipus: fmt.Sprintf("OLT: %s", w.Nev), // vagy w.Name, ha az a mező neve
 						Adat:  fmt.Sprintf("OLT áramszünet miatt ellenőrizni: %v => %v", a, w),
 						Datum: datum,
-						Id:    id,
 					})
 				}
 			}
@@ -132,10 +118,10 @@ func main() {
 
 	for _, k := range kiirasok {
 		
-		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "adat", k.Adat, "datum", k.Datum, "id", k.Id)
-		key := Kiiras{Tipus: k.Tipus, Id: k.Id}
+		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "adat", k.Adat, "datum", k.Datum)
+		key := Kiiras{Tipus: k.Tipus, Datum: k.Datum}
 		if seenIds[key] {
-			continue // már kiírtuk ezt a Tipus+Id kombinációt
+			continue // már kiírtuk ezt a Tipus+Dátum kombinációt
 		}
 		seenIds[key] = true
 
@@ -144,9 +130,4 @@ func main() {
 			logging.Fatal("Kiírás hiba", "hiba", err)
 		}
 	}
-}
-
-func toInt(str string) (int, error) {
-	clean := strings.TrimRight(str, ".")
-	return strconv.Atoi(clean)
 }
