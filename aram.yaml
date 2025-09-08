@@ -3,10 +3,10 @@ aramszunet_patterns:
   - ^(.+?)(?:\s+(utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|király|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor))?(?:\s+([-,\d].*))?$
 
 hazszam_patterns:
-  - '\d+(?:[./]\w+)?(?:\.\s*)?\s*-\s*\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?|\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?'
+  - '\d+(?:[./-]\w+)?(?:\.\s*)?\s*-\s*\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?|\d+(?:[./]\w+)?(?:\.\s*)?(?:\s*hr?)?'
 
 clean_patterns:
-  - '((/|\.|_)[A-Za-z0-9]*(\szm)*)'
+  - '((-\b|/|\.|_)[A-Za-z0-9]*(\szm)*)'
 
 kizar_patterns:
   - '\d+(\/|-)\d+'
