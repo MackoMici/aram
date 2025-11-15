@@ -17,6 +17,9 @@ kizar_patterns:
 terulet_patterns:	
   - '(.+?)(?:\s+(?:utca|krt\.?|kert|köz|sor|telep|lakóház|tömb|erdészház|puszta|lakótelep|út|park|tér|sarok|sétány|szállás|útja|király))?(?:\s+(\d+))?$'
 
+vegpont_patterns:
+  - '^(?P<Varos>[\S-]+)[ -]+(?P<Terulet>[\S ]+) (?P<Maradek>(?:utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|király|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor|tanyák|) )(?P<Hazszam>[0-9]+).+?$'
+
 aramszunet_replacements:
   - replacement: "Tury"
     match: "Túry"

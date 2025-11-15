@@ -8,8 +8,8 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -128,7 +128,7 @@ func NewHoszt(data []string) *Hoszt {
 
 func (a *Hoszt) setVegpont(s string) {
 	re := regexp.MustCompile(` sarok`)
-		a.Sarok = re.MatchString(s)
+	a.Sarok = re.MatchString(s)
 	for _, p := range hoszt_patterns {
 		parts := p.FindStringSubmatch(s)
 		streetRaw, numRaw := parts[1], parts[2]
@@ -146,7 +146,6 @@ func (a *Hoszt) setVegpont(s string) {
 				a.Hazszam = i
 			}
 		}
-		break
 	}
 }
 

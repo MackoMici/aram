@@ -34,14 +34,15 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v2.0.8")
-	conf  := config.NewConfig("./aram.yaml")
-	asz   := internal.NewAramSzunets("./aramszunet.txt", conf)
-	node  := internal.NewNodes("./nodeok.txt", conf)
-	fej   := internal.NewFejallomasok("./fejallomas.txt", conf)
+	logging.Logger.Info("Program elindult", "verzió", "v3.0.0")
+	conf := config.NewConfig("./aram.yaml")
+	asz := internal.NewAramSzunets("./aramszunet.txt", conf)
+	node := internal.NewNodes("./nodeok.txt", conf)
+	modem := internal.NewActiveModems("./activemodemlist.csv", conf)
+	fej := internal.NewFejallomasok("./fejallomas.txt", conf)
 	hoszt := internal.NewHoszts("./hoszt.txt", conf)
-	mux   := internal.NewMuxs("./mux.txt", conf)
-	olt   := internal.NewOlts("./olt.txt", conf)
+	mux := internal.NewMuxs("./mux.txt", conf)
+	olt := internal.NewOlts("./olt.txt", conf)
 
 	f, err := os.Create("lehetseges_aramszunet.txt")
 
@@ -68,9 +69,11 @@ func main() {
 			for _, num := range a.Hazszamok {
 				if vs := node.Find(a.Varos, a.Terulet_mod, num); vs != nil {
 					for _, v := range vs {
+						modems := modem.FindByNode(v.Node)
+						affected := internal.FilterAffectedModems(modems, asz)
 						kiirasok = append(kiirasok, Kiiras{
 							Tipus: fmt.Sprintf("NODE: %s", v.Node), // vagy v.Name, ha az a mező neve
-							Adat:  fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v", a, v),
+							Adat:  fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v -- modemek száma: %v -- érintett végpontok: %v", a, v, len(modems), len(affected)),
 							Datum: datum,
 						})
 					}
@@ -107,7 +110,6 @@ func main() {
 		}
 	}
 
-	
 	// dátum szerinti rendezés
 	sort.SliceStable(kiirasok, func(i, j int) bool {
 		return kiirasok[i].Datum.Before(kiirasok[j].Datum)
@@ -117,7 +119,7 @@ func main() {
 	seenIds := make(map[Kiiras]bool)
 
 	for _, k := range kiirasok {
-		
+
 		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "adat", k.Adat, "datum", k.Datum)
 		key := Kiiras{Tipus: k.Tipus, Datum: k.Datum}
 		if seenIds[key] {

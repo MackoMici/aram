@@ -8,9 +8,9 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"sort"
 	"strconv"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -38,11 +38,11 @@ type AramSzunets struct {
 	index map[string]map[string]map[int][]*AramSzunet
 }
 
-var aram_patterns    []*regexp.Regexp
+var aram_patterns []*regexp.Regexp
 var hazszam_patterns []*regexp.Regexp
-var clean_patterns   []*regexp.Regexp
-var kizar_patterns   []*regexp.Regexp
-var aram_replace     []*config.Replacements
+var clean_patterns []*regexp.Regexp
+var kizar_patterns []*regexp.Regexp
+var aram_replace []*config.Replacements
 
 func NewAramSzunets(file string, conf *config.Config) *AramSzunets {
 	am := &AramSzunets{
@@ -105,7 +105,6 @@ func (a *AramSzunets) Load() {
 		}
 		a.List = append(a.List, NewAramSzunet(rStr))
 	}
-//	logging.Logger.Debug("Áramszünet lista", "lista", a.List)
 	logging.Logger.Info("Áramszünet", "darab", len(a.List))
 }
 
@@ -124,7 +123,7 @@ func (a *AramSzunets) BuildIndex() {
 			hrszSeen[dateKey] = true
 		}
 
-		if rec.Hazszamok == nil || len(rec.Hazszamok) == 0 {
+		if len(rec.Hazszamok) == 0 {
 			rec.Hazszamok = []int{0} // ha nincs házszám, akkor legyen 0
 		}
 		if a.index[city] == nil {
@@ -188,18 +187,15 @@ func (a *AramSzunet) setTerulet(s string) {
 }
 
 func parseHouseNumbers(s string) ([]int, error) {
-	var nums   []int
+	var nums []int
 	var tokens []string
 
 	for _, re := range hazszam_patterns {
 		tokens = re.FindAllString(s, -1)
 	}
-//	logging.Logger.Debug("Házszám patterns", "Házszám", tokens)
 	for i := 0; i < len(tokens); i++ {
 		tok := strings.TrimSpace(tokens[i])
-//		logging.Logger.Debug("Házszám patterns", "Házszám", tok)
 		tok = cleanPatterns(tok)
-//		logging.Logger.Debug("Házszám patterns", "Clean", tok)
 		if isIgnored(tok) {
 			continue // kihagyjuk
 		}
@@ -207,23 +203,23 @@ func parseHouseNumbers(s string) ([]int, error) {
 			ends := strings.SplitN(tok, " - ", 2)
 			start, err := toInt(ends[0])
 			if err != nil {
-				return nil, fmt.Errorf("Érvénytelen tartomány kezdete %q: %w", ends[0], err)
+				return nil, fmt.Errorf("érvénytelen tartomány kezdete %q: %w", ends[0], err)
 			}
 			end, err := toInt(ends[1])
 			if err != nil {
-				return nil, fmt.Errorf("Érvénytelen tartomány vége %q: %w", ends[1], err)
+				return nil, fmt.Errorf("érvénytelen tartomány vége %q: %w", ends[1], err)
 			}
 			if end < start {
 				start, end = end, start
 			}
-			for n := start; n <= end; n+= 2 {
+			for n := start; n <= end; n += 2 {
 				nums = append(nums, n)
 			}
 			continue
 		}
 		n, err := toInt(tok)
 		if err != nil {
-			return nil, fmt.Errorf("Érvénytelen szám %q: %w", tok, err)
+			return nil, fmt.Errorf("érvénytelen szám %q: %w", tok, err)
 		}
 		nums = append(nums, n)
 	}

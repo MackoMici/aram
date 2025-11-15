@@ -8,8 +8,8 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -106,7 +106,7 @@ func (a *Muxs) Find(city, street string, number int) *Mux {
 		if streetMap, ok := cityMap[street]; ok {
 			if m, ok := streetMap[number]; ok {
 				return m
-		}
+			}
 			for _, m := range streetMap {
 				if m.Sarok {
 					return m
@@ -147,7 +147,6 @@ func (a *Mux) setVegpont(s string) {
 				a.Hazszam = i
 			}
 		}
-		break
 	}
 }
 

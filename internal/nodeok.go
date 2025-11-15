@@ -8,8 +8,8 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -159,7 +159,6 @@ func (a *Node) setVegpont(s string) {
 				a.Hazszam = i
 			}
 		}
-		break
 	}
 }
 

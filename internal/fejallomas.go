@@ -8,8 +8,8 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -78,7 +78,7 @@ func (a *Fejallomasok) Load() {
 func (a *Fejallomasok) BuildIndex() {
 	a.index = make(map[string]map[string]map[int]*Fejallomas)
 	for _, fejallomas := range a.List {
-		city, street, num := fejallomas.Varos, fejallomas.Vegpont_mod1, fejallomas.Hazszam		
+		city, street, num := fejallomas.Varos, fejallomas.Vegpont_mod1, fejallomas.Hazszam
 		// város tábla init
 		if a.index[city] == nil {
 			a.index[city] = make(map[string]map[int]*Fejallomas)
@@ -148,7 +148,6 @@ func (a *Fejallomas) setVegpont(s string) {
 				a.Hazszam = i
 			}
 		}
-		break
 	}
 }
 
