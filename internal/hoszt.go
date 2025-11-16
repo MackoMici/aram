@@ -4,7 +4,6 @@ package internal
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -147,8 +146,4 @@ func (a *Hoszt) setVegpont(s string) {
 			}
 		}
 	}
-}
-
-func (a *Hoszt) String() string {
-	return fmt.Sprintf("%s hoszt, %s", a.Varos, a.Terulet)
 }

@@ -29,7 +29,6 @@ type AramSzunet struct {
 	Forras       string
 	Bekerules    string
 	Terulet_mod  string
-	TeljesTel    bool
 }
 
 type AramSzunets struct {
@@ -169,8 +168,6 @@ func NewAramSzunet(data []string) *AramSzunet {
 }
 
 func (a *AramSzunet) setTerulet(s string) {
-	re := regexp.MustCompile(`Teljes település`)
-	a.TeljesTel = re.MatchString(s)
 	for _, p := range aram_patterns {
 		parts := p.FindStringSubmatch(s)
 		streetRaw, numsRaw := parts[1], parts[3]
@@ -264,8 +261,4 @@ func teruletMod(s string) string {
 		}
 	}
 	return s
-}
-
-func (a *AramSzunet) String() string {
-	return fmt.Sprintf("%s %s - %s; %s %s", a.ID, a.Datum, a.Idoszak, a.Varos, a.Terulet)
 }

@@ -3,10 +3,12 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/MackoMici/aram/config"
@@ -15,9 +17,15 @@ import (
 )
 
 type Kiiras struct {
-	Tipus string
-	Adat  string
-	Datum time.Time
+	Tipus           string
+	Sorszam         string
+	Datum           time.Time
+	Idoszak         string
+	Hol             string
+	Megnevezes      string
+	Vegpont         string
+	modemek_szama   int
+	vegpontok_szama int
 }
 
 func main() {
@@ -34,7 +42,9 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v3.0.0")
+	logging.Logger.Info("Program elindult", "verzió", "v3.1.0")
+
+	// Konfiguráció és adatok betöltése
 	conf := config.NewConfig("./aram.yaml")
 	asz := internal.NewAramSzunets("./aramszunet.txt", conf)
 	node := internal.NewNodes("./nodeok.txt", conf)
@@ -44,68 +54,81 @@ func main() {
 	mux := internal.NewMuxs("./mux.txt", conf)
 	olt := internal.NewOlts("./olt.txt", conf)
 
-	f, err := os.Create("lehetseges_aramszunet.txt")
-
+	// CSV fájl létrehozása
+	f, err := os.Create("lehetseges_aramszunet.csv")
 	if err != nil {
 		logging.Fatal("Lehetséges áramszünet fájl", "hiba", err)
 	}
-
 	defer f.Close()
 
+	// Adatok feldolgozása
 	for _, a := range asz.List {
-
 		datum, err := time.Parse("2006-01-02", a.Datum)
 		if err != nil {
 			logging.Fatal("Dátum parse hiba", "hiba", err)
 		}
 
-		if a.TeljesTel {
-			kiirasok = append(kiirasok, Kiiras{
-				Tipus: "TELJES",
-				Adat:  fmt.Sprintf("A teljes település megáll: %v", a),
-				Datum: datum,
-			})
-		} else {
-			for _, num := range a.Hazszamok {
-				if vs := node.Find(a.Varos, a.Terulet_mod, num); vs != nil {
-					for _, v := range vs {
-						modems := modem.FindByNode(v.Node)
-						affected := internal.FilterAffectedModems(modems, asz)
-						kiirasok = append(kiirasok, Kiiras{
-							Tipus: fmt.Sprintf("NODE: %s", v.Node), // vagy v.Name, ha az a mező neve
-							Adat:  fmt.Sprintf("Node áramszünet miatt ellenőrizni: %v => %v -- modemek száma: %v -- érintett végpontok: %v", a, v, len(modems), len(affected)),
-							Datum: datum,
-						})
-					}
-				}
-				if y := mux.Find(a.Varos, a.Terulet_mod, num); y != nil {
+		for _, num := range a.Hazszamok {
+			if vs := node.Find(a.Varos, a.Terulet_mod, num); vs != nil {
+				for _, v := range vs {
+					modems := modem.FindByNode(v.Node)
+					affected := internal.FilterAffectedModems(modems, asz)
 					kiirasok = append(kiirasok, Kiiras{
-						Tipus: fmt.Sprintf("MUX: %s", y.Nev), // vagy y.Name, ha az a mező neve
-						Adat:  fmt.Sprintf("Mux áramszünet miatt ellenőrizni: %v => %v", a, y),
-						Datum: datum,
+						Tipus:           "NODE",
+						Sorszam:         a.ID,
+						Datum:           datum,
+						Idoszak:         a.Idoszak,
+						Hol:             fmt.Sprintf("%s, %s", a.Varos, a.Terulet),
+						Megnevezes:      v.Node,
+						Vegpont:         fmt.Sprintf("%s, %s", v.Varos, v.Terulet),
+						modemek_szama:   len(modems),
+						vegpontok_szama: len(affected),
 					})
 				}
-				if z := fej.Find(a.Varos, a.Terulet_mod, num); z != nil {
-					kiirasok = append(kiirasok, Kiiras{
-						Tipus: fmt.Sprintf("FEJ: %s", z.Nev), // vagy z.Name, ha az a mező neve
-						Adat:  fmt.Sprintf("Fejállomás áramszünet miatt ellenőrizni: %v => %v", a, z),
-						Datum: datum,
-					})
-				}
-				if x := hoszt.Find(a.Varos, a.Terulet_mod, num); x != nil {
-					kiirasok = append(kiirasok, Kiiras{
-						Tipus: fmt.Sprintf("HOSZT: %s", x.Varos), // vagy x.Name, ha az a mező neve
-						Adat:  fmt.Sprintf("Hoszt áramszünet miatt ellenőrizni: %v => %v", a, x),
-						Datum: datum,
-					})
-				}
-				if w := olt.Find(a.Varos, a.Terulet_mod, num); w != nil {
-					kiirasok = append(kiirasok, Kiiras{
-						Tipus: fmt.Sprintf("OLT: %s", w.Nev), // vagy w.Name, ha az a mező neve
-						Adat:  fmt.Sprintf("OLT áramszünet miatt ellenőrizni: %v => %v", a, w),
-						Datum: datum,
-					})
-				}
+			}
+			if y := mux.Find(a.Varos, a.Terulet_mod, num); y != nil {
+				kiirasok = append(kiirasok, Kiiras{
+					Tipus:      "MUX",
+					Sorszam:    a.ID,
+					Datum:      datum,
+					Idoszak:    a.Idoszak,
+					Hol:        fmt.Sprintf("%s, %s", a.Varos, a.Terulet),
+					Megnevezes: y.Nev,
+					Vegpont:    fmt.Sprintf("%s, %s", y.Varos, y.Terulet),
+				})
+			}
+			if z := fej.Find(a.Varos, a.Terulet_mod, num); z != nil {
+				kiirasok = append(kiirasok, Kiiras{
+					Tipus:      "FEJÁLLOMÁS",
+					Sorszam:    a.ID,
+					Datum:      datum,
+					Idoszak:    a.Idoszak,
+					Hol:        fmt.Sprintf("%s, %s", a.Varos, a.Terulet),
+					Megnevezes: z.Nev,
+					Vegpont:    fmt.Sprintf("%s, %s", z.Varos, z.Terulet),
+				})
+			}
+			if x := hoszt.Find(a.Varos, a.Terulet_mod, num); x != nil {
+				kiirasok = append(kiirasok, Kiiras{
+					Tipus:      "HOSZT",
+					Sorszam:    a.ID,
+					Datum:      datum,
+					Idoszak:    a.Idoszak,
+					Hol:        fmt.Sprintf("%s, %s", a.Varos, a.Terulet),
+					Megnevezes: x.Varos,
+					Vegpont:    fmt.Sprintf("%s, %s", x.Varos, x.Terulet),
+				})
+			}
+			if w := olt.Find(a.Varos, a.Terulet_mod, num); w != nil {
+				kiirasok = append(kiirasok, Kiiras{
+					Tipus:      "OLT",
+					Sorszam:    a.ID,
+					Datum:      datum,
+					Idoszak:    a.Idoszak,
+					Hol:        fmt.Sprintf("%s, %s", a.Varos, a.Terulet),
+					Megnevezes: w.Nev,
+					Vegpont:    fmt.Sprintf("%s, %s", w.Varos, w.Terulet),
+				})
 			}
 		}
 	}
@@ -115,21 +138,49 @@ func main() {
 		return kiirasok[i].Datum.Before(kiirasok[j].Datum)
 	})
 
-	// fájlba írás a végén
+	// fájlba írás
 	seenIds := make(map[Kiiras]bool)
+
+	// UTF-8 BOM kiírása
+	if _, err := f.Write([]byte{0xEF, 0xBB, 0xBF}); err != nil {
+		logging.Fatal("Hiba BOM írásakor", "hiba", err)
+	}
+
+	writer := csv.NewWriter(f)
+	defer writer.Flush()
+	writer.Comma = ';'
+
+	header := []string{"Típus", "Áramszünet Id", "Dátum", "Időpont", "Helyszín", "Megnevezés", "Végpont", "Modemek száma", "Végpontok száma"}
+	if err := writer.Write(header); err != nil {
+		logging.Fatal("Hiba a fejléc írásakor:", err)
+	}
 
 	for _, k := range kiirasok {
 
-		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "adat", k.Adat, "datum", k.Datum)
-		key := Kiiras{Tipus: k.Tipus, Datum: k.Datum}
+		logging.Logger.Debug("Kiírás", "tipus", k.Tipus, "sorszam", k.Sorszam, "datum", k.Datum, "idoszak", k.Idoszak, "hol", k.Hol, "megnevezes", k.Megnevezes, "vegpont", k.Vegpont, "modemek_szama", k.modemek_szama, "vegpontok_szama", k.vegpontok_szama)
+
+		key := Kiiras{Tipus: k.Tipus, Megnevezes: k.Megnevezes, Datum: k.Datum}
 		if seenIds[key] {
 			continue // már kiírtuk ezt a Tipus+Dátum kombinációt
 		}
 		seenIds[key] = true
 
-		_, err := fmt.Fprintln(f, k.Adat)
-		if err != nil {
+		record := []string{
+			k.Tipus,
+			k.Sorszam,
+			k.Datum.Format("2006-01-02"),
+			k.Idoszak,
+			k.Hol,
+			k.Megnevezes,
+			k.Vegpont,
+			strconv.Itoa(k.modemek_szama),
+			strconv.Itoa(k.vegpontok_szama),
+		}
+
+		if err := writer.Write(record); err != nil {
 			logging.Fatal("Kiírás hiba", "hiba", err)
 		}
 	}
+
+	logging.Logger.Info("CSV fájl létrehozva", "fájlnév", "lehetseges_aramszunet.csv")
 }

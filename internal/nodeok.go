@@ -4,7 +4,6 @@ package internal
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 	"regexp"
@@ -160,8 +159,4 @@ func (a *Node) setVegpont(s string) {
 			}
 		}
 	}
-}
-
-func (a *Node) String() string {
-	return fmt.Sprintf("%s node, %s %s", a.Node, a.Varos, a.Terulet)
 }
