@@ -98,7 +98,7 @@ func (a *ActiveModem) setVegpont(s string) {
 	for _, p := range vegpont_patterns {
 		if namedGroups := a.matchWithGroup(p, s); len(namedGroups) > 0 {
 			a.Varos = a.varos(namedGroups)
-			a.Terulet = a.terulet(namedGroups)
+			a.Terulet = strings.ReplaceAll(a.terulet(namedGroups), "  ", " ")
 			if a.hazszam(namedGroups) == "" {
 				a.Hazszam = -1
 			}

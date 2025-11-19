@@ -42,7 +42,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v3.1.0")
+	logging.Logger.Info("Program elindult", "verzió", "v3.1.1")
 
 	// Konfiguráció és adatok betöltése
 	conf := config.NewConfig("./aram.yaml")
