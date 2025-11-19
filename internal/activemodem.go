@@ -156,7 +156,7 @@ func (a *ActiveModems) FindByNode(nodeName string) []*ActiveModem {
 		}
 	}
 	if len(result) == 0 {
-		logging.Logger.Debug("FindByNode", nodeName, "nincs végpont")
+		logging.Logger.Error("FindByNode", nodeName, "nincs végpont")
 	}
 	return result
 }
