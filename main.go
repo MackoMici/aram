@@ -42,7 +42,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Logfájl bezárás hiba: %v\n", err)
 		}
 	}()
-	logging.Logger.Info("Program elindult", "verzió", "v3.1.1")
+	logging.Logger.Info("Program elindult", "verzió", "v3.2.0")
 
 	// Konfiguráció és adatok betöltése
 	conf := config.NewConfig("./aram.yaml")
@@ -72,7 +72,7 @@ func main() {
 			if vs := node.Find(a.Varos, a.Terulet_mod, num); vs != nil {
 				for _, v := range vs {
 					modems := modem.FindByNode(v.Node)
-					affected := internal.FilterAffectedModems(modems, asz)
+					affected := internal.FilterAffectedModems(modems, asz, datum)
 					kiirasok = append(kiirasok, Kiiras{
 						Tipus:           "NODE",
 						Sorszam:         a.ID,

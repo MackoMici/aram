@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/MackoMici/aram/config"
 	"github.com/MackoMici/aram/logging"
@@ -161,12 +162,24 @@ func (a *ActiveModems) FindByNode(nodeName string) []*ActiveModem {
 	return result
 }
 
-func FilterAffectedModems(modems []*ActiveModem, outages *AramSzunets) []*ActiveModem {
+func FilterAffectedModems(modems []*ActiveModem, outages *AramSzunets, datum time.Time) []*ActiveModem {
 	var affected []*ActiveModem
 	for _, modem := range modems {
 		if matches := outages.Find(modem.Varos, modem.Terulet, modem.Hazszam); matches != nil {
-			logging.Logger.Debug("FilterAffectedModems", "Város", modem.Varos, "Terület", modem.Terulet, "Házszám", modem.Hazszam)
-			affected = append(affected, modem)
+			// dátum szűrés
+			for _, outage := range matches {
+				parsedOutageDate, err := time.Parse("2006-01-02", outage.Datum)
+				if err != nil {
+					// ha rossz formátum, logoljuk
+					logging.Logger.Error("Hibás Dátum", outage.Datum, err)
+					continue
+				}
+				if parsedOutageDate.Equal(datum) {
+					logging.Logger.Debug("FilterAffectedModems", "Város", modem.Varos, "Terület", modem.Terulet, "Házszám", modem.Hazszam)
+					affected = append(affected, modem)
+					break // ha egy cím érintett az adott napon, már hozzáadjuk
+				}
+			}
 		}
 	}
 	return affected
