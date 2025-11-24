@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strconv"
 	"time"
@@ -202,21 +203,19 @@ func runCheck() {
 	modem := internal.NewActiveModems("./activemodemlist.csv", conf)
 
 	// alakítsuk map-pé a gyors kereséshez
-	nodeMap := make(map[string]bool)
+	nodeMap := make(map[string]struct{})
 	for _, n := range node.List {
-		nodeMap[n.Node] = true
+		nodeMap[n.Node] = struct{}{}
 	}
 
-	modemMap := make(map[string]bool)
+	modemMap := make(map[string]struct{})
 	for _, m := range modem.List {
-		if m.Node1 != "" {
-			modemMap[m.Node1] = true
-		}
+		modemMap[m.Node1] = struct{}{}
 		if m.Node2 != "" {
-			modemMap[m.Node2] = true
+			modemMap[m.Node2] = struct{}{}
 		}
 		if m.Node3 != "" {
-			modemMap[m.Node3] = true
+			modemMap[m.Node3] = struct{}{}
 		}
 	}
 
@@ -224,32 +223,38 @@ func runCheck() {
 
 	// csak nodeokban
 	for n := range nodeMap {
-		if !modemMap[n] {
+		if _, ok := modemMap[n]; !ok {
 			logging.Logger.Info("Csak nodeokban:", "név", n)
 		}
 	}
 
 	// csak modemekben
 	for m := range modemMap {
-		if !nodeMap[m] {
+		if _, ok := nodeMap[m]; !ok {
 			logging.Logger.Info("Csak activemodem-ben:", "név", m)
 		}
 	}
 }
 
 func runCountCheck() {
+	//	start := time.Now()
 	conf := config.NewConfig("./aram.yaml")
 	node := internal.NewNodes("./nodeok.txt", conf)
 	modem := internal.NewActiveModems("./activemodemlist.csv", conf)
 
 	logging.Logger.Info("Node modem darabszámok:")
 
+	nodeNames := make([]string, len(node.List))
+	for i, n := range node.List {
+		nodeNames[i] = n.Node
+	}
+	slices.Sort(nodeNames)
+	uniqueNodes := slices.Compact(nodeNames)
+
 	// számláló map
 	counts := make(map[string]int)
 	for _, m := range modem.List {
-		if m.Node1 != "" {
-			counts[m.Node1]++
-		}
+		counts[m.Node1]++
 		if m.Node2 != "" {
 			counts[m.Node2]++
 		}
@@ -258,7 +263,8 @@ func runCountCheck() {
 		}
 	}
 
-	for _, n := range node.List {
-		logging.Logger.Info("Modem darabszám:", n.Node, counts[n.Node])
+	for _, n := range uniqueNodes {
+		logging.Logger.Info("Modem darabszám:", n, counts[n])
 	}
+	//	logging.Logger.Info("Ellenőrzés kész", "eltelt idő", time.Since(start))
 }
