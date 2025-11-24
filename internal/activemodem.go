@@ -48,7 +48,29 @@ func NewActiveModems(file string, conf *config.Config) *ActiveModems {
 		vegpont_patterns = append(vegpont_patterns, re)
 	}
 	am.Load()
+	ApplyCityOverrides(am, conf)
 	return am
+}
+
+func ApplyCityOverrides(am *ActiveModems, conf *config.Config) {
+	logged := make(map[string]bool)
+	for _, modem := range am.List {
+		// Node alapján város név csere
+		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node1]; ok {
+			if !logged[modem.Node1] {
+				logging.Logger.Debug("ActivemodemVnevReplace", "node1", modem.Node1, "régi város", modem.Varos, "új város", newCity)
+				logged[modem.Node1] = true
+			}
+			modem.Varos = newCity
+		}
+		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node2]; ok {
+			if !logged[modem.Node2] {
+				logging.Logger.Debug("ActivemodemVnevReplace", "node2", modem.Node2, "régi város", modem.Varos, "új város", newCity)
+				logged[modem.Node2] = true
+			}
+			modem.Varos = newCity
+		}
+	}
 }
 
 func (a *ActiveModems) Load() {

@@ -9,13 +9,14 @@ import (
 )
 
 type Config struct {
-	AramszunetPatterns     []string        `yaml:"aramszunet_patterns"`
-	HazszamPatterns        []string        `yaml:"hazszam_patterns"`
-	TeruletPatterns        []string        `yaml:"terulet_patterns"`
-	VegpontPatterns        []string        `yaml:"vegpont_patterns"`
-	CleanPatterns          []string        `yaml:"clean_patterns"`
-	KizarPatterns          []string        `yaml:"kizar_patterns"`
-	AramszunetReplacements []*Replacements `yaml:"aramszunet_replacements"`
+	AramszunetPatterns     []string          `yaml:"aramszunet_patterns"`
+	HazszamPatterns        []string          `yaml:"hazszam_patterns"`
+	TeruletPatterns        []string          `yaml:"terulet_patterns"`
+	VegpontPatterns        []string          `yaml:"vegpont_patterns"`
+	CleanPatterns          []string          `yaml:"clean_patterns"`
+	KizarPatterns          []string          `yaml:"kizar_patterns"`
+	AramszunetReplacements []*Replacements   `yaml:"aramszunet_replacements"`
+	ActivemodemVnevReplace map[string]string `yaml:"activemodem_varosnevek_replacements"`
 }
 
 func NewConfig(file string) *Config {
