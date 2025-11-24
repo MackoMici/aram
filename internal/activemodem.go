@@ -21,6 +21,7 @@ type ActiveModem struct {
 	ID      string
 	Node1   string
 	Node2   string
+	Node3   string
 	Varos   string
 	Terulet string
 	Hazszam int
@@ -70,6 +71,13 @@ func ApplyCityOverrides(am *ActiveModems, conf *config.Config) {
 			}
 			modem.Varos = newCity
 		}
+		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node3]; ok {
+			if !logged[modem.Node3] {
+				logging.Logger.Debug("ActivemodemVnevReplace", "node3", modem.Node3, "régi város", modem.Varos, "új város", newCity)
+				logged[modem.Node3] = true
+			}
+			modem.Varos = newCity
+		}
 	}
 }
 
@@ -112,6 +120,9 @@ func (a *ActiveModem) setNode(s string) {
 		r := strings.Split(s, ";")
 		a.Node1 = r[0]
 		a.Node2 = r[1]
+		if len(r) > 2 {
+			a.Node3 = r[2]
+		}
 	} else {
 		a.Node1 = s
 	}
@@ -173,7 +184,7 @@ func (a *ActiveModem) matchWithGroup(r *regexp.Regexp, s string) map[string]stri
 func (a *ActiveModems) FindByNode(nodeName string) []*ActiveModem {
 	var result []*ActiveModem
 	for _, modem := range a.List {
-		if modem.Node1 == nodeName || modem.Node2 == nodeName {
+		if modem.Node1 == nodeName || modem.Node2 == nodeName || modem.Node3 == nodeName {
 			result = append(result, modem)
 			logging.Logger.Debug("FindByNode", "node", nodeName, "végpont", modem.Vegpont)
 		}
