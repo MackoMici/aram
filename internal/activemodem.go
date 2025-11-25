@@ -57,26 +57,38 @@ func ApplyCityOverrides(am *ActiveModems, conf *config.Config) {
 	logged := make(map[string]bool)
 	for _, modem := range am.List {
 		// Node alapján város név csere
-		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node1]; ok {
+		if newCity, ok := conf.AmVarosReplacements[modem.Node1]; ok {
 			if !logged[modem.Node1] {
-				logging.Logger.Debug("ActivemodemVnevReplace", "node1", modem.Node1, "régi város", modem.Varos, "új város", newCity)
+				logging.Logger.Debug("AmVarosReplacements", "node1", modem.Node1, "régi város", modem.Varos, "új város", newCity)
 				logged[modem.Node1] = true
 			}
 			modem.Varos = newCity
 		}
-		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node2]; ok {
+		if newCity, ok := conf.AmVarosReplacements[modem.Node2]; ok {
 			if !logged[modem.Node2] {
-				logging.Logger.Debug("ActivemodemVnevReplace", "node2", modem.Node2, "régi város", modem.Varos, "új város", newCity)
+				logging.Logger.Debug("AmVarosReplacements", "node2", modem.Node2, "régi város", modem.Varos, "új város", newCity)
 				logged[modem.Node2] = true
 			}
 			modem.Varos = newCity
 		}
-		if newCity, ok := conf.ActivemodemVnevReplace[modem.Node3]; ok {
+		if newCity, ok := conf.AmVarosReplacements[modem.Node3]; ok {
 			if !logged[modem.Node3] {
-				logging.Logger.Debug("ActivemodemVnevReplace", "node3", modem.Node3, "régi város", modem.Varos, "új város", newCity)
+				logging.Logger.Debug("AmVarosReplacements", "node3", modem.Node3, "régi város", modem.Varos, "új város", newCity)
 				logged[modem.Node3] = true
 			}
 			modem.Varos = newCity
+		}
+		// Utca alapján város és utca név csere
+		parts := strings.Fields(modem.Terulet)
+		if len(parts) > 1 {
+			if newStreet, ok := conf.AmUtcaReplacements[parts[0]]; ok {
+				if !logged[modem.Terulet] {
+					logging.Logger.Debug("AmUtcaReplacements", "régi utca", modem.Terulet, "új utca", strings.Join(parts[1:], " "), "régi város", modem.Varos, "új város", newStreet)
+					logged[parts[0]] = true
+				}
+				modem.Terulet = strings.Join(parts[1:], " ")
+				modem.Varos = newStreet
+			}
 		}
 	}
 }

@@ -16,7 +16,8 @@ type Config struct {
 	CleanPatterns          []string          `yaml:"clean_patterns"`
 	KizarPatterns          []string          `yaml:"kizar_patterns"`
 	AramszunetReplacements []*Replacements   `yaml:"aramszunet_replacements"`
-	ActivemodemVnevReplace map[string]string `yaml:"activemodem_varosnevek_replacements"`
+	AmVarosReplacements    map[string]string `yaml:"am_varos_replacements"`
+	AmUtcaReplacements     map[string]string `yaml:"am_utca_replacements"`
 }
 
 func NewConfig(file string) *Config {

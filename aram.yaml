@@ -1,5 +1,4 @@
 aramszunet_patterns:
-
   - ^(.+?)(?:\s+(utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|király|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor))?(?:\s+([-,\d].*))?$
 
 hazszam_patterns:
@@ -20,12 +19,16 @@ terulet_patterns:
 vegpont_patterns:
   - '^(?P<Varos>[\S-]+)[ -]+(?P<Terulet>[\S ]+) (?P<Maradek>(?:utca|főút|hrsz|dűlő|liget|sétány|puszta|hegy|szállás|király|tanya|köz|körzet|völgy|tér|tere|lakótelep|körút|út|ltp|telep|kert|erdészház|park|sor|tanyák|) )(?P<Hazszam>[0-9]+).+?$'
 
-activemodem_varosnevek_replacements:
+am_varos_replacements:
   "Tolna-Mözs - Jókai 2 (1550)": "Tolna, Mözs"
   "Tolna-Mözs - Jókai 1 (1530)": "Tolna, Mözs"
   "Tolna-Mözs - Kossuth": "Tolna, Mözs"
   "Paks - Dunakömlőd Béke": "Paks, Dunakömlőd"
   "Paks - Dunakömlőd Hegy": "Paks, Dunakömlőd"
+
+am_utca_replacements:
+  "Belsőbáránd": "Aba, Belsőbáránd"
+  "Bodakajtor": "Aba, Bodakajtor"
 
 aramszunet_replacements:
   - replacement: "Tury"

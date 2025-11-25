@@ -237,7 +237,7 @@ func runCheck() {
 }
 
 func runCountCheck() {
-	//	start := time.Now()
+	start := time.Now()
 	conf := config.NewConfig("./aram.yaml")
 	node := internal.NewNodes("./nodeok.txt", conf)
 	modem := internal.NewActiveModems("./activemodemlist.csv", conf)
@@ -266,5 +266,5 @@ func runCountCheck() {
 	for _, n := range uniqueNodes {
 		logging.Logger.Info("Modem darabszám:", n, counts[n])
 	}
-	//	logging.Logger.Info("Ellenőrzés kész", "eltelt idő", time.Since(start))
+	logging.Logger.Info("Ellenőrzés kész", "eltelt idő", time.Since(start))
 }
