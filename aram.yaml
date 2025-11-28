@@ -25,10 +25,21 @@ am_varos_replacements:
   "Tolna-Mözs - Kossuth": "Tolna, Mözs"
   "Paks - Dunakömlőd Béke": "Paks, Dunakömlőd"
   "Paks - Dunakömlőd Hegy": "Paks, Dunakömlőd"
+  "Bázakerettye Majori": "Bázakerettye, Báza"
+  "Bonyhád - Majos1": "Bonyhád, Majos"
+  "Bonyhád - Majos2": "Bonyhád, Majos"
+  "Dombóvár - Gunaras": "Dombóvár, Gunaras"
+  "Dombóvár - Szőlőhegy": "Dombóvár, Szőlőhegy"
+  "Dombori": "Fadd, Dombori"
+  "Dombori Nyárfa": "Fadd, Dombori"
+  "Dombori Öregfalu": "Fadd, Dombori"
+  "Paks - Biritó": "Paks, Birito"
+  "Gyapa": "Paks, Gyapa"
 
 am_utca_replacements:
   "Belsőbáránd": "Aba, Belsőbáránd"
-  "Bodakajtor": "Aba, Bodakajtor"
+  "Kövesd": "Bátaszék, Kövesd"
+  "Lajvér": "Bátaszék, Lajvér"
 
 aramszunet_replacements:
   - replacement: "Tury"
@@ -102,4 +113,37 @@ aramszunet_replacements:
     is_regex: true
   - replacement: "Zalaegerszeg"
     match: "Zalaegerszeg, Vorhota"
+    is_regex: true
+  - replacement: "Bonyhád"
+    match: "Bonyhád, Börzsöny"
+    is_regex: true
+  - replacement: "Bonyhád"
+    match: "Bonyhád, Bonyhádszerdahely"
+    is_regex: true
+  - replacement: "Lenti"
+    match: "Lenti, Mumor"
+    is_regex: true
+  - replacement: "Mindszentgodisa"
+    match: "Mindszentgodisa, Gyümölcsény"
+    is_regex: true
+  - replacement: "Orfű"
+    match: "Orfű, Mecsekszakál"
+    is_regex: true
+  - replacement: "Orfű"
+    match: "Orfű, Tekeres"
+    is_regex: true
+  - replacement: "Sárbogárd"
+    match: "Sárbogárd, Pusztaegres"
+    is_regex: true
+  - replacement: "Sárbogárd"
+    match: "Sárbogárd, Sárszentmiklós"
+    is_regex: true
+  - replacement: "Sárszentlőrinc"
+    match: "Sárszentlőrinc, Úzd"
+    is_regex: true
+  - replacement: "Tengelic"
+    match: "Tengelic, Szőlőhegy"
+    is_regex: true
+  - replacement: "Várdomb"
+    match: "Várdomb, Újberekpuszta"
     is_regex: true

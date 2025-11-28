@@ -84,7 +84,7 @@ func ApplyCityOverrides(am *ActiveModems, conf *config.Config) {
 			if newStreet, ok := conf.AmUtcaReplacements[parts[0]]; ok {
 				if !logged[modem.Terulet] {
 					logging.Logger.Debug("AmUtcaReplacements", "régi utca", modem.Terulet, "új utca", strings.Join(parts[1:], " "), "régi város", modem.Varos, "új város", newStreet)
-					logged[parts[0]] = true
+					logged[modem.Terulet] = true
 				}
 				modem.Terulet = strings.Join(parts[1:], " ")
 				modem.Varos = newStreet
