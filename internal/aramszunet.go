@@ -199,6 +199,7 @@ func parseHouseNumbers(s string) ([]int, error) {
 		if strings.Contains(tok, " - ") {
 			ends := strings.SplitN(tok, " - ", 2)
 			start, err := toInt(ends[0])
+
 			if err != nil {
 				return nil, fmt.Errorf("érvénytelen tartomány kezdete %q: %w", ends[0], err)
 			}
@@ -209,8 +210,14 @@ func parseHouseNumbers(s string) ([]int, error) {
 			if end < start {
 				start, end = end, start
 			}
-			for n := start; n <= end; n += 2 {
-				nums = append(nums, n)
+			if start%2 == end%2 {
+				for n := start; n <= end; n += 2 {
+					nums = append(nums, n)
+				}
+			} else {
+				for n := start; n <= end; n++ {
+					nums = append(nums, n)
+				}
 			}
 			continue
 		}
