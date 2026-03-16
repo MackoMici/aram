@@ -193,11 +193,13 @@ func parseHouseNumbers(s string) ([]int, error) {
 	for i := 0; i < len(tokens); i++ {
 		tok := strings.TrimSpace(tokens[i])
 		tok = cleanPatterns(tok)
+
 		if isIgnored(tok) {
 			continue // kihagyjuk
 		}
-		if strings.Contains(tok, " - ") {
-			ends := strings.SplitN(tok, " - ", 2)
+		if strings.Contains(tok, "-") {
+
+			ends := strings.SplitN(tok, "-", 2)
 			start, err := toInt(ends[0])
 
 			if err != nil {

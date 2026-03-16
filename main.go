@@ -44,7 +44,7 @@ func main() {
 		}
 	}()
 
-	logging.Logger.Info("Program elindult", "verzió", "v3.3.6")
+	logging.Logger.Info("Program elindult", "verzió", "v3.3.7")
 
 	switch {
 	case *checkOnly:
