@@ -119,21 +119,21 @@ func (a *ActiveModems) Load() {
 
 func NewActiveModem(data []string) *ActiveModem {
 	a := &ActiveModem{
-		Node:    data[13],
-		Vegpont: data[14],
-		ID:      data[15],
+		Node:    data[15],
+		Vegpont: data[16],
+		ID:      data[17],
 	}
-	a.setNode(data[13])
-	a.setVegpont(data[14])
+	a.setNode(data[15])
+	a.setVegpont(data[16])
 	return a
 }
 func (a *ActiveModem) setNode(s string) {
 	if strings.Contains(s, ";") {
 		r := strings.Split(s, ";")
 		a.Node1 = r[0]
-		a.Node2 = r[1]
+		a.Node2 = strings.TrimLeft(r[1], " ")
 		if len(r) > 2 {
-			a.Node3 = r[2]
+			a.Node3 = strings.TrimLeft(r[2], " ")
 		}
 	} else {
 		a.Node1 = s
